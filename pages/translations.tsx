@@ -6,7 +6,7 @@ import styled from 'styled-components';
 // import ErrorMessage from '../components/error';
 // import Loading from '../components/loading';
 
-const Translations = ({ data }) => {
+const Translations = ({ webpage }) => {
     // const { error, isLoading, summary } = useProducts();
 
     // if (isLoading) return <Loading />;
@@ -36,13 +36,13 @@ const Translations = ({ data }) => {
     ]
 
     useEffect(() => {
-        if (data) {
-            setExampleWebPage(data);
+        if (webpage) {
+            setExampleWebPage(webpage);
 
-            const fragment = document.createRange().createContextualFragment(data);
+            const fragment = document.createRange().createContextualFragment(webpage);
             document.querySelector('.example-box')?.appendChild(fragment)
         }
-    }, [data])
+    }, [webpage])
 
     const handleChange = (val) => setValue(val);
 
@@ -93,7 +93,7 @@ const Translations = ({ data }) => {
         const leftLanguageCode = leftLanguage.split('-')[0]
         const rightLanguageCode = rightLanguage.split('-')[0]
 
-        const body = generateTranslationBody(textToBeTranslated, leftLanguageCode, rightLanguageCode);
+        const body = generateTranslationBody(textToBeTranslated, rightLanguageCode, leftLanguageCode);
 
         const translatedText = await fetch('https://translation-cloud-functions.vercel.app/translate', {
             method: 'POST',
@@ -102,15 +102,15 @@ const Translations = ({ data }) => {
             },
             body: JSON.stringify(body)
         }).then((response) => response.json())
-            .then((data) => data.translations[0])
+            .then((data) => data.translations[0].toText)
 
         setTranslatedText(translatedText);
     }
 
-    const updateWebPagePreview = async () => {
-        const languageCode = webPageTranslationLanguage.split('-')[0];
+    const updateWebPagePreview = async (language) => {
+        const languageCode = language.split('-')[0];
 
-        const body = generateTranslationBody(textToBeTranslated, languageCode);
+        const body = generateTranslationBody(webpage, languageCode);
 
         const translatedWebPage = await fetch('https://translation-cloud-functions.vercel.app/translate', {
             method: 'POST',
@@ -119,7 +119,7 @@ const Translations = ({ data }) => {
             },
             body: JSON.stringify(body)
         }).then((response) => response.json())
-            .then((data) => data.translations[0])
+            .then((data) => data.translations[0].toText)
 
         const fragment = document.createRange().createContextualFragment(translatedWebPage);
         document.querySelector('.example-box')?.replaceChildren(fragment);
@@ -293,9 +293,9 @@ const Translations = ({ data }) => {
                                         maxHeight={300}
                                         onOptionChange={(value) => {
                                             setWebPageTranslationLanguage(value)
-                                            updateWebPagePreview()
+                                            updateWebPagePreview(value)
                                         }}
-                                        options={savedLanguages.map((language) => {
+                                        options={[defaultLanguage, ...savedLanguages].map((language) => {
                                             return { value: language, content: language.split('-')[1] }
                                         })}
                                         placeholder={'Choose a language'}
@@ -323,15 +323,15 @@ export default Translations;
 
 export async function getServerSideProps() {
     const res = await fetch(`https://www.google.co.uk`);
-    const data = await res.text();
+    const webpage = await res.text();
 
-    if (!data) {
+    if (!webpage) {
         return {
             notFound: true,
         }
     }
 
     return {
-        props: { data }, // will be passed to the page component as props
+        props: { webpage }, // will be passed to the page component as props
     }
 }
