@@ -1,6 +1,6 @@
 import useSWR from 'swr';
 import { useSession } from '../context/session';
-import { ErrorProps, ListItem, Order, QueryParams, ShippingAndProductsInfo } from '../types';
+import { ErrorProps, ListItem, Order, QueryParams, ShippingAndProductsInfo, StoreInformation } from '../types';
 
 async function fetcher(url: string, query: string) {
     const res = await fetch(`${url}?${query}`);
@@ -91,4 +91,21 @@ export const useShippingAndProductsInfo = (orderId: number) => {
         isLoading: !data && !error,
         error,
     };
+}
+
+export const useStoreInfo = () => {
+    const { context } = useSession();
+    const shouldFetch = context;
+    const params = new URLSearchParams({ context }).toString();
+
+    const { data, error } = useSWR<StoreInformation, ErrorProps>(
+        shouldFetch ? ['/api/store/info', params] : null, fetcher
+    );
+    
+    return {
+        storeInfo: data,
+        isLoading: !data && !error,
+        error,
+    }
+
 }

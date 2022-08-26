@@ -53,3 +53,10 @@ export interface ShippingAndProductsInfo {
     shipping_addresses: ShippingAddress[];
     products: OrderProduct[];
 }
+
+export interface StoreInformation {
+    id: string,
+    domain: string,
+    secure_url: string,
+    status: string
+}
