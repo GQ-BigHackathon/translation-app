@@ -1,6 +1,5 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import { encodePayload, getBCAuth, setSession } from '../../lib/auth';
-import { bigcommerceClient } from '../../lib/auth';
 
 export default async function auth(req: NextApiRequest, res: NextApiResponse) {
   try {
@@ -73,8 +72,6 @@ export default async function auth(req: NextApiRequest, res: NextApiResponse) {
       },
       body: JSON.stringify({ storeSetupData: { hostname, status: 'active' } }),
     }).then((res) => res.json());
-
-    console.log('storeSetupResponse', storeSetupResponse);
 
     res.redirect(302, `/?context=${encodedContext}`);
   } catch (error) {

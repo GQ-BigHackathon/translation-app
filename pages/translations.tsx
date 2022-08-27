@@ -7,12 +7,11 @@ import {
   ESFlagIcon,
   FRFlagIcon,
   GBFlagIcon,
+  ITFlagIcon,
   JPFlagIcon,
+  KRFlagIcon,
   PTFlagIcon,
   RUFlagIcon,
-  KRFlagIcon,
-  ITFlagIcon,
-  ZAFlagIcon,
 } from '@bigcommerce/big-design-icons/flags';
 import { useEffect, useState } from 'react';
 import styled from 'styled-components';
@@ -28,7 +27,7 @@ const Translations = () => {
   const [value, setValue] = useState([]);
   const [leftLanguage, setLeftLanguage] = useState('');
   const [rightLanguage, setRightLanguage] = useState('');
-  const [webPageTranslationLanguage, setWebPageTranslationLanguage] = useState('');
+  // const [webPageTranslationLanguage, setWebPageTranslationLanguage] = useState('');
   const [textToBeTranslated, setTextToBeTranslated] = useState('');
   const [translatedText, setTranslatedText] = useState('');
 
@@ -88,7 +87,7 @@ const Translations = () => {
     setRightLanguage(newRight);
   };
 
-  const generateTranslationBody = (text: String, to: String, from = '') => {
+  const generateTranslationBody = (text: string, to: string, from = '') => {
     return {
       to,
       from,
@@ -166,7 +165,6 @@ const Translations = () => {
     async function fetchData(storeInfo) {
       const response = await fetchStoreLanguages(storeInfo.id);
       const { defaultLanguage, languagesEnabled } = response;
-      console.log('defaultLanguage', defaultLanguage);
       setDefaultRenderedLanguage(`${defaultLanguage.code}-${defaultLanguage.name[0].toUpperCase() + defaultLanguage.name.slice(1)}`);
       languagesEnabled.length ?? setSavedLanguages(languagesEnabled.map((lang) => `${lang.code}-${lang.name[0].toUpperCase() + lang.name.slice(1)}`));
       setValue(languagesEnabled.map((lang) => `${lang.code}-${lang.name[0].toUpperCase() + lang.name.slice(1)}`));
@@ -197,21 +195,19 @@ const Translations = () => {
   };
 
   const submitLanguageSelection = async () => {
-    console.log('value', value);
     const body = value.map((lang) => {
       const code = lang.split('-')[0];
       const name = lang.split('-')[1].toLowerCase();
 
       return { code, name };
     });
-    console.log('body', body);
 
     const defaultBody = {
       code: defaultRenderedLanguage.split('-')[0],
       name: defaultRenderedLanguage.split('-')[1].toLowerCase(),
     };
 
-    const response = await saveStoreLanguages(storeInfo.id, defaultBody, body);
+    await saveStoreLanguages(storeInfo.id, defaultBody, body);
   };
 
   return (
@@ -303,7 +299,6 @@ const Translations = () => {
             <StyledBox border="box" borderRadius="normal" marginRight="xLarge" padding="medium">
               <H4>Selected Languages</H4>
               {[defaultRenderedLanguage + ' (Default)', ...savedLanguages].map((language, index) => {
-                console.log('language', language);
                 const languageCode = language.split('-')[0];
                 const languageText = language.split('-')[1];
                 const flag = findRelevantFlag(languageCode);
