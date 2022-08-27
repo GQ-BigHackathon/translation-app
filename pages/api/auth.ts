@@ -64,7 +64,7 @@ export default async function auth(req: NextApiRequest, res: NextApiResponse) {
 
     const hostname = storeInfo.secure_url;
 
-    const storeSetupResponse = await fetch(`https://translation-cloud-functions.vercel.app/store/setup`, {
+    await fetch(`https://translation-cloud-functions.vercel.app/store/setup`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
