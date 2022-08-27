@@ -10,6 +10,9 @@ import {
   JPFlagIcon,
   PTFlagIcon,
   RUFlagIcon,
+  KRFlagIcon,
+  ITFlagIcon,
+  ZAFlagIcon,
 } from '@bigcommerce/big-design-icons/flags';
 import { useEffect, useState } from 'react';
 import styled from 'styled-components';
@@ -19,9 +22,8 @@ import { useStoreInfo } from '../lib/hooks';
 
 const Translations = () => {
   const { isLoading, storeInfo, error } = useStoreInfo();
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [exampleWebpage, setExampleWebPage] = useState('');
-  const [defaultLanguage, setDefaultLanguage] = useState('');
+  // const [exampleWebpage, setExampleWebPage] = useState('');
+  const [defaultRenderedLanguage, setDefaultRenderedLanguage] = useState('');
   const [savedLanguages, setSavedLanguages] = useState([]);
   const [value, setValue] = useState([]);
   const [leftLanguage, setLeftLanguage] = useState('');
@@ -36,11 +38,19 @@ const Translations = () => {
     { value: 'es-Spanish', content: 'Spanish' },
     { value: 'ar-Arabic', content: 'Arabic' },
     { value: 'de-German', content: 'German' },
+    { value: 'fr-French', content: 'French' },
+    { value: 'it-Italian', content: 'Italian' },
+    { value: 'ja-Japanese', content: 'Japanese' },
+    { value: 'ko-Korean', content: 'Korean' },
     { value: 'pt-Portuguese', content: 'Portuguese' },
     { value: 'ru-Russian', content: 'Russian' },
-    { value: 'fr-French', content: 'French' },
-    { value: 'ja-Japanese', content: 'Japanese' },
-  ];
+    { value: 'tr-Turkish', content: 'Turkish' },
+    { value: 'vi-Vietnamese', content: 'Vietnamese' },
+    { value: 'af-Afrikaans', content: 'Afrikaans' },
+    { value: 'sq-Albanian', content: 'Albanian' },
+    { value: 'am-Amharic', content: 'Amharic' },
+    { value: 'hy-Armenian', content: 'Armenian' },
+  ].sort((a, b) => a.content.localeCompare(b.content));
 
   const handleChange = (val) => setValue(val);
 
@@ -64,6 +74,10 @@ const Translations = () => {
         return <FRFlagIcon />;
       case 'ja':
         return <JPFlagIcon />;
+      case 'ko':
+        return <KRFlagIcon />;
+      case 'it':
+        return <ITFlagIcon />;
     }
   };
 
@@ -97,6 +111,7 @@ const Translations = () => {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
+        storehash: storeInfo.id,
       },
       body: JSON.stringify(body),
     })
@@ -106,59 +121,60 @@ const Translations = () => {
     setTranslatedText(translatedText);
   };
 
-  const updateWebPagePreview = async (language) => {
-    const languageCode = language.split('-')[0];
+  // const updateWebPagePreview = async (language) => {
+  //   const languageCode = language.split('-')[0];
 
-    const body = generateTranslationBody(exampleWebpage, languageCode);
+  //   const body = generateTranslationBody(exampleWebpage, languageCode);
 
-    const translatedWebPage = await fetch('https://translation-cloud-functions.vercel.app/translate', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        storehash: storeInfo.id,
-      },
-      body: JSON.stringify(body),
-    })
-      .then((response) => response.json())
-      .then((data) => {
-        console.log('data', data);
-        // data.translations.toText HERE
-      });
+  //   const translatedWebPage = await fetch('https://translation-cloud-functions.vercel.app/translate', {
+  //     method: 'POST',
+  //     headers: {
+  //       'Content-Type': 'application/json',
+  //       storehash: storeInfo.id,
+  //     },
+  //     body: JSON.stringify(body),
+  //   })
+  //     .then((response) => response.json())
+  //     .then((data) => {
+  //       console.log('data', data);
+  //       // data.translations.toText HERE
+  //     });
 
-    const fragment = document.createRange().createContextualFragment(translatedWebPage);
-    document.querySelector('.example-box')?.replaceChildren(fragment);
-  };
+  //   const fragment = document.createRange().createContextualFragment(translatedWebPage);
+  //   document.querySelector('.example-box')?.replaceChildren(fragment);
+  // };
 
   const fetchStoreLanguages = async (storeHash: string) => {
     return await fetch(`https://translation-cloud-functions.vercel.app/store/languages`, {
       method: 'GET',
       headers: {
-        StoreHash: storeHash,
+        storehash: storeHash,
       },
     })
       .then((response) => response.json())
       .catch((error) => console.error(error));
   };
 
-  const fetchPreviewPage = async (url: string) => {
-    return fetch(`https://translation-cloud-functions.vercel.app/store/preview`, {
-      method: 'POST',
-      body: JSON.stringify({ url }),
-    }).then((response) => response.text());
-  };
+  // const fetchPreviewPage = async (url: string) => {
+  //   return fetch(`https://translation-cloud-functions.vercel.app/store/preview`, {
+  //     method: 'POST',
+  //     body: JSON.stringify({ url }),
+  //   }).then((response) => response.text());
+  // };
 
   useEffect(() => {
     async function fetchData(storeInfo) {
       const response = await fetchStoreLanguages(storeInfo.id);
       const { defaultLanguage, languagesEnabled } = response;
-      setDefaultLanguage(`${defaultLanguage.code}-${defaultLanguage.name[0].toUpperCase() + defaultLanguage.name.slice(1)}`);
-      setSavedLanguages(languagesEnabled.map((lang) => `${lang.code}-${lang.name[0].toUpperCase() + lang.name.slice(1)}`));
+      console.log('defaultLanguage', defaultLanguage);
+      setDefaultRenderedLanguage(`${defaultLanguage.code}-${defaultLanguage.name[0].toUpperCase() + defaultLanguage.name.slice(1)}`);
+      languagesEnabled.length ?? setSavedLanguages(languagesEnabled.map((lang) => `${lang.code}-${lang.name[0].toUpperCase() + lang.name.slice(1)}`));
       setValue(languagesEnabled.map((lang) => `${lang.code}-${lang.name[0].toUpperCase() + lang.name.slice(1)}`));
-      const previewPage = await fetchPreviewPage(storeInfo.secure_url);
-      setExampleWebPage(previewPage);
-      console.log('previewPage', previewPage);
-      const fragment = document.createRange().createContextualFragment(previewPage);
-      document.querySelector('.example-box')?.appendChild(fragment);
+      // const previewPage = await fetchPreviewPage(storeInfo.secure_url);
+      // setExampleWebPage(previewPage);
+      // console.log('previewPage', previewPage);
+      // const fragment = document.createRange().createContextualFragment(previewPage);
+      // document.querySelector('.example-box')?.appendChild(fragment);
     }
     if (!isLoading) fetchData(storeInfo);
   }, [storeInfo, isLoading]);
@@ -181,20 +197,21 @@ const Translations = () => {
   };
 
   const submitLanguageSelection = async () => {
+    console.log('value', value);
     const body = value.map((lang) => {
       const code = lang.split('-')[0];
       const name = lang.split('-')[1].toLowerCase();
 
       return { code, name };
     });
+    console.log('body', body);
 
     const defaultBody = {
-      code: defaultLanguage.split('-')[0],
-      name: defaultLanguage.split('-')[1].toLowerCase(),
+      code: defaultRenderedLanguage.split('-')[0],
+      name: defaultRenderedLanguage.split('-')[1].toLowerCase(),
     };
 
     const response = await saveStoreLanguages(storeInfo.id, defaultBody, body);
-    console.log('response', response);
   };
 
   return (
@@ -215,7 +232,7 @@ const Translations = () => {
                     label="Default Langauage"
                     maxHeight={300}
                     onOptionChange={(value) => {
-                      setDefaultLanguage(value);
+                      setDefaultRenderedLanguage(value);
                     }}
                     options={[
                       { value: 'en-English', content: 'English' },
@@ -227,11 +244,32 @@ const Translations = () => {
                       { value: 'ru-Russian', content: 'Russian' },
                       { value: 'fr-French', content: 'French' },
                       { value: 'ja-Japanese', content: 'Japanese' },
-                    ]}
+                      { value: 'it-Italian', content: 'Italian' },
+                      { value: 'ko-Korean', content: 'Korean' },
+                      { value: 'tr-Turkish', content: 'Turkish' },
+                      { value: 'pl-Polish', content: 'Polish' },
+                      { value: 'nl-Dutch', content: 'Dutch' },
+                      { value: 'sv-Swedish', content: 'Swedish' },
+                      { value: 'da-Danish', content: 'Danish' },
+                      { value: 'fi-Finnish', content: 'Finnish' },
+                      { value: 'no-Norwegian', content: 'Norwegian' },
+                      { value: 'ro-Romanian', content: 'Romanian' },
+                      { value: 'hu-Hungarian', content: 'Hungarian' },
+                      { value: 'cs-Czech', content: 'Czech' },
+                      { value: 'sk-Slovak', content: 'Slovak' },
+                      { value: 'sl-Slovenian', content: 'Slovenian' },
+                      { value: 'el-Greek', content: 'Greek' },
+                      { value: 'bg-Bulgarian', content: 'Bulgarian' },
+                      { value: 'uk-Ukrainian', content: 'Ukrainian' },
+                      { value: 'hr-Croatian', content: 'Croatian' },
+                      { value: 'lt-Lithuanian', content: 'Lithuanian' },
+                      { value: 'lv-Latvian', content: 'Latvian' },
+                      { value: 'et-Estonian', content: 'Estonian' },
+                    ].sort((a, b) => a.value.localeCompare(b.value))}
                     placeholder={'Choose Language'}
                     placement={'bottom-start'}
                     required
-                    value={defaultLanguage}
+                    value={defaultRenderedLanguage}
                   />
                 </FormGroup>
                 <FormGroup>
@@ -241,7 +279,7 @@ const Translations = () => {
                     maxHeight={300}
                     onOptionsChange={handleChange}
                     options={listOfLanguages.map((language) => {
-                      if (language.value === defaultLanguage) {
+                      if (language.value === defaultRenderedLanguage) {
                         language.disabled = true;
                       }
 
@@ -264,7 +302,8 @@ const Translations = () => {
           <FlexItem flexGrow={2}>
             <StyledBox border="box" borderRadius="normal" marginRight="xLarge" padding="medium">
               <H4>Selected Languages</H4>
-              {[defaultLanguage + ' (Default)', ...savedLanguages].map((language, index) => {
+              {[defaultRenderedLanguage + ' (Default)', ...savedLanguages].map((language, index) => {
+                console.log('language', language);
                 const languageCode = language.split('-')[0];
                 const languageText = language.split('-')[1];
                 const flag = findRelevantFlag(languageCode);
@@ -296,7 +335,7 @@ const Translations = () => {
                       label="From"
                       maxHeight={300}
                       onOptionChange={(value) => setLeftLanguage(value)}
-                      options={[defaultLanguage, ...savedLanguages].map((language) => {
+                      options={[defaultRenderedLanguage, ...savedLanguages].map((language) => {
                         return { value: language, content: language.split('-')[1] };
                       })}
                       placeholder={'Choose a language'}
@@ -316,7 +355,7 @@ const Translations = () => {
                       label="To"
                       maxHeight={300}
                       onOptionChange={(value) => setRightLanguage(value)}
-                      options={[defaultLanguage, ...savedLanguages].map((language) => {
+                      options={[defaultRenderedLanguage, ...savedLanguages].map((language) => {
                         return { value: language, content: language.split('-')[1] };
                       })}
                       placeholder={'Choose a language'}
@@ -354,7 +393,7 @@ const Translations = () => {
               </FlexItem>
             </Form>
           </StyledBox>
-          {storeInfo.status === 'live' && (
+          {/* {storeInfo.status === 'live' && (
             <FlexItem flexGrow={2}>
               <StyledBox border="box" borderRadius="normal" marginRight="xLarge" padding="medium">
                 <H4>Webpage Preview</H4>
@@ -381,7 +420,7 @@ const Translations = () => {
                 <Box backgroundColor="secondary10" padding="xxLarge" shadow="floating" className="example-box"></Box>
               </StyledBox>
             </FlexItem>
-          )}
+          )} */}
         </Flex>
       </Panel>
     </>
